@@ -22,7 +22,7 @@ export default {
 
 ```js
 // actions/users.js
-import { fetchListingAction } from "redux-blackbox/actions";
+import { fetchListingAction } from "redux-blackbox";
 
 const fetchUsers = () => {
   return axios.get("/users");
@@ -30,7 +30,7 @@ const fetchUsers = () => {
 
 export const fetchUsersAction = () => {
   return async (dispatch) =>{
-    return await actions.fetchListingAction("users", dispatch, fetchUsers);
+    return await fetchListingAction("users", dispatch, fetchUsers);
   }
 }
 ```
@@ -39,32 +39,39 @@ export const fetchUsersAction = () => {
 
 ```jsx
 // components/ListUsers.js
-import { IN_PROGRESS, FAILED, SUCCESS } from "redux-blackbox/constants";
+import { IN_PROGRESS, FAILED, SUCCESS } from "redux-blackbox";
 
-const ListUsers = (users) => {
-  if (users.uiState === IN_PROGRESS) {
-    return <div>Loading...</div>
+
+class ListUsers extends React.Component {
+  componentDidMount() {
+    this.props.fetchUsersAction();
   }
-  if (users.uiState === FAILED) {
-    return <div className="notification is-danger">{users.error.message}</div>
-  }
-  if (users.uiState === SUCCESS) {
-    if (users.listing.length) {
-      return (
-        <div>
-          <ul>
-            { users.listing.map(user =>{
-                return <li>{user.name}</li>
-              }) 
-            }
-          </ul>
-        </div>
-      )
-    } else {
-      return <div>Users list is empty</div>
+  render() {
+    const {users} = this.props;
+    if (users.uiState === IN_PROGRESS) {
+      return <div>Loading...</div>
     }
+    if (users.uiState === FAILED) {
+      return <div className="notification is-danger">{users.error.message}</div>
+    }
+    if (users.uiState === SUCCESS) {
+      if (users.listing.length) {
+        return (
+          <div>
+            <ul>
+              { users.listing.map(user =>{
+                  return <li>{user.name}</li>
+                }) 
+              }
+            </ul>
+          </div>
+        )
+      } else {
+        return <div>Users list is empty</div>
+      }
+    }
+    return null;
   }
-  return null;
 }
 
 const mapStateToProps = (state) =>{
